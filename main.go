@@ -64,6 +64,26 @@ func main() {
 
 			fmt.Println(uid)
 
+			go func() {
+				for {
+					b, _ := queues_buffers[uid]
+					if len(b) != 0 {
+						iter := queues_iterators[uid]
+						iter_end := queues_iterators_end[uid]
+						q := queue[uid]
+
+						for q.Next != nil {
+							q = *q.Next
+						}
+
+						for i := iter; i < iter_end; i++ {
+							q.Next = &b[i]
+							q = *q.Next
+						}
+						iter = iter_end
+					}
+				}
+			}()
 		}()
 	}
 
@@ -99,6 +119,18 @@ func main() {
 
 			mutex_iterator_end.Unlock()
 		}()
+	})
+
+	r.GET("/out/:id", func(c *gin.Context) {
+		id := c.Param("id")
+
+		m, e := queue[id]
+		if !e {
+			c.String(404, "Queue does not exist!")
+			return
+		}
+
+		c.JSON(200, m)
 	})
 }
 
