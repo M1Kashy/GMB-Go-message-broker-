@@ -132,6 +132,8 @@ func main() {
 
 		c.JSON(200, m)
 	})
+
+	r.Run(":8080")
 }
 
 func GenerateUID() (string, error) {
